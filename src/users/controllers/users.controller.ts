@@ -12,7 +12,7 @@ import {
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { ParseIntPipe } from '../pipes/parse-int.pipe';
 import { UserService } from '../services/users.service';
-import { CreateUserDto } from '../dtos/create-user.dto';
+import { CreateUserDto } from '../requests/create-user.request';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 import { LoginUserDto } from '../dtos/login-user.dto';
 
@@ -28,7 +28,7 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('user/:id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id') id: string) {
     const user = await this.userService.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -46,10 +46,15 @@ export class UsersController {
     return this.userService.login(loginUserDto.email, loginUserDto.password);
   }
 
+  @Get('test')
+  async test() {
+    return { message: 'Test endpoint working', timestamp: new Date() };
+  }
+
   @UseGuards(JwtAuthGuard)
   @Patch('user/:id')
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto
   ) {
     const updatedUser = await this.userService.update(id, updateUserDto);
@@ -61,7 +66,7 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Delete('user/:id')
-  async delete(@Param('id', ParseIntPipe) id: number) {
+  async delete(@Param('id') id: string) {
     const deletedUser = await this.userService.delete(id);
     if (!deletedUser) {
       throw new NotFoundException('User not found');

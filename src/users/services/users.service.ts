@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, UnauthorizedException
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../schemas/users.schema';
-import { CreateUserDto } from '../dtos/create-user.dto';
+import { CreateUserDto } from '../requests/create-user.request';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcrypt';
@@ -15,10 +15,19 @@ export class UserService {
   ) {}
 
   async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+    try {
+      console.log('UserService: findAll called');
+      console.log('UserService: userModel exists?', !!this.userModel);
+      const result = await this.userModel.find().exec();
+      console.log('UserService: found users:', result.length);
+      return result;
+    } catch (error) {
+      console.error('UserService: findAll error:', error);
+      throw error;
+    }
   }
 
-  async findOne(id: number): Promise<User | null> {
+  async findOne(id: string): Promise<User | null> {
     return this.userModel.findById(id).exec();
   }
 
@@ -64,7 +73,7 @@ export class UserService {
   }
 
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User | null> {
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User | null> {
     const existingUser = await this.userModel
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .exec();
@@ -72,7 +81,7 @@ export class UserService {
   }
 
 
-  async delete(id: number): Promise<User | null> {
+  async delete(id: string): Promise<User | null> {
     return this.userModel.findByIdAndDelete(id).exec();
   }
 }
